@@ -554,7 +554,14 @@ def add_blank_frame(frameNum, runid):
         max *= 4
     for bytes in range(max):
         working_string += chr(0xFF)
-    runStatuses[runid].inputBuffer.insert(frameNum, working_string)
+    try:
+        frameNumber = frameNum[0]
+        frameCount = frameNum[1]
+    except TypeError:
+        frameNumber = frameNum
+        frameCount = 1
+    for frames in range(frameCount):
+        runStatuses[runid].inputBuffer.insert(frameNumber, working_string)
 
 def load_blank_frames(runid):
     run = runStatuses[runid].tasRun
@@ -765,9 +772,21 @@ class CLI(cmd.Cmd):
                     break
             except ValueError:
                 print("ERROR: Please enter an integer!\n")
-        runStatuses[selected_run].tasRun.blankFrames.append(frameNum)
+        while True:
+            try:
+                frameCount = readint("How many frames to add? ")
+                if frameCount < 0:
+                    print("ERROR: Please enter a positive number!\n")
+                    continue
+                elif frameCount == 0:
+                    return
+                else:
+                    break
+            except ValueError:
+                print("ERROR: Please enter an integer!\n")
+        runStatuses[selected_run].tasRun.blankFrames.append((frameNum, frameCount))
         runStatuses[selected_run].isRunModified = True
-        add_blank_frame(frameNum, selected_run)
+        add_blank_frame((frameNum, frameCount), selected_run)
 
     def do_reset(self, data):
         """Reset an active run back to frame 0"""
