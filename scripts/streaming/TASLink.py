@@ -754,7 +754,7 @@ class CLI(cmd.Cmd):
 
         print("Run has been updated. Remember to save if you want this change to be permanent!")
 
-    def do_add_blank_frame(self, data):
+    def do_insert_blank_frame(self, data):
         if selected_run == -1:
             print("ERROR: No run is selected!\n")
             return
