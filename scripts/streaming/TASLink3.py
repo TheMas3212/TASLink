@@ -12,6 +12,7 @@ import readline
 import glob
 import signal # Handle InteruptSignals
 import serial
+import struct
 from serial import SerialException
 
 # GarbageCollection
@@ -56,6 +57,12 @@ DEFAULTS = {'contype': 'normal',
 
 # types implemented int,str,float,bool
 # constraints only work on int and float
+
+# because apprently this is the correct way to convert intergers to bytes
+int_to_byte_struct = struct.Struct('B')
+def int_to_byte(interger):
+    return int_to_byte_struct.pack(interger)
+
 def get_input(type, prompt, default='', constraints={}):
     while True:
         try:
@@ -111,7 +118,7 @@ def getNextMask():
     for index,letter in enumerate(MASKS):
         if masksInUse[index] == 0:
             masksInUse[index] = 1
-            return bytes([letter])
+            return int_to_byte(letter)
     return b'Z'
 
 def freeMask(letter):
@@ -323,7 +330,7 @@ def setupCommunication(tasrun):
     controllerMask = "".join(controllers)  # convert binary to string
     command += customCommand
     if TASLINK_CONNECTED:
-        string = command + bytes([int(controllerMask, 2)])
+        string = command + int_to_byte(int(controllerMask, 2))
         ser.write(string)  # send the sA/sB/sC/sD command
     else:
         print(command, controllerMask)
@@ -336,14 +343,14 @@ def setupCommunication(tasrun):
     byte[0] = '1'  # enable flag
     bytestring = "".join(byte)  # turn back into string
     if TASLINK_CONNECTED:
-        string = command + bytes([int(bytestring, 2)]) + bytes([int(controllerMask, 2)])
+        string = command + int_to_byte(int(bytestring, 2)) + int_to_byte(int(controllerMask, 2))
         ser.write(string)  # send the sA/sB/sC/sD command
     else:
         print(command, bytestring, controllerMask)
 
     # finally, clear lanes and get ready to rock
     if TASLINK_CONNECTED:
-        string = b'r' + bytes([int(controllerMask, 2)])
+        string = b'r' + int_to_byte(int(controllerMask, 2))
         ser.write(string)
     else:
         print("r", controllerMask)
@@ -631,7 +638,7 @@ class TASRun(object):
                 working_string += bytes(one_frame)
 
                 # combine the appropriate parts of working_string
-                command_string = bytes([working_string[0]])
+                command_string = int_to_byte(working_string[0])
                 for counter in range(self.numControllers):
                     if self.controllerType == CONTROLLER_FOUR_SCORE:
                         pass # what is a four score?  would probably require a new file format in fact....
@@ -651,7 +658,7 @@ class TASRun(object):
                 working_string += bytes(one_frame)
 
                 # combine the appropriate parts of working_string
-                command_string = bytes([working_string[0]])
+                command_string = int_to_byte(working_string[0])
                 for counter in range(self.numControllers):
                     if self.controllerType == CONTROLLER_Y:
                         command_string += working_string[(counter * 8) + 1:(counter * 8) + 5] # math magic
@@ -986,7 +993,7 @@ class CLI(cmd.Cmd):
         controllerMask = "".join(controllers)  # convert binary to string
 
         if TASLINK_CONNECTED:
-            string = b'r' + bytes([int(controllerMask, 2)])
+            string = b'r' + int_to_byte(int(controllerMask, 2))
             ser.write(string)  # clear the buffer
         else:
             print("r" + controllerMask, 2)  # clear the buffer
@@ -1058,7 +1065,7 @@ class CLI(cmd.Cmd):
 
        # clear the lanes
         if TASLINK_CONNECTED:
-            string = b'r' + bytes([int(controllerMask, 2)])
+            string = b'r' + int_to_byte(int(controllerMask, 2))
             ser.write(string)  # clear the buffer
         else:
             print("r" + controllerMask, 2)  # clear the buffer
