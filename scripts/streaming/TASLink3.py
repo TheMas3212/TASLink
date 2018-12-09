@@ -419,15 +419,15 @@ def add_everdrive_header(runid):
     elif tasRun.controllerType == CONTROLLER_MULTITAP:
         max *= 4
     for bytes in range(max):
-        blankframe += 0xFF
+        blankframe += b'\xff'
     startframe = runStatuses[runid].customCommand
     max = int(tasRun.controllerBits / 8) * tasRun.numControllers  # bytes * number of controllers
     # next we take controller type into account
     for bytes in range(max):
         if bytes == 0:
-            startframe += 0xEF # press start on controller 1
+            startframe += b'\xef' # press start on controller 1
         else:
-            startframe += 0xFF
+            startframe += b'\xff'
     newbuffer.insert(0, startframe) # add a frame pressing start to start of input buffer
     for frame in range(0, EVERDRIVEFRAMES-1):
         newbuffer.insert(0, blankframe) # add x number of blank frames to start of input buffer
@@ -450,19 +450,19 @@ def add_sd2snes_header(runid):
     elif tasRun.controllerType == CONTROLLER_MULTITAP:
         max *= 4
     for bytes in range(max):
-        blankframe += 0xFF
+        blankframe += b'\xff'
     startframe = runStatuses[runid].customCommand
     for bytes in range(max):
         if bytes == 0:
-            startframe += 0xEF # press start on controller 1
+            startframe += b'\xef' # press start on controller 1
         else:
-            startframe += 0xFF
+            startframe += b'\xff'
     aframe = runStatuses[runid].customCommand
     for bytes in range(max):
         if bytes == 1:
-            aframe += 0x7F # press A on controller 1
+            aframe += b'\x7f' # press A on controller 1
         else:
-            aframe += 0xFF
+            aframe += b'\xff'
     newbuffer.insert(0, aframe) # add a frame pressing A to start of input buffer
     for frame in range(0, 9):
         newbuffer.insert(0, blankframe) # add 10 blank frames to start of input buffer
@@ -481,7 +481,7 @@ def add_blank_frame(frameNum, runid):
     elif run.controllerType == CONTROLLER_MULTITAP:
         max *= 4
     for bytes in range(max):
-        working_string += 0xFF
+        working_string += b'\xff'
     runStatuses[runid].inputBuffer.insert(frameNum, working_string)
 def load_blank_frames(runid):
     run = runStatuses[runid].tasRun
@@ -613,7 +613,7 @@ class TASRun(object):
         for frame in range(self.dummyFrames):
             working_string = customCommand
             for bytes_ in range(bytesPerCommand):
-                working_string += 0xFF
+                working_string += b'\xff'
             buffer[frame] = working_string
 
         frameno = 0
@@ -891,7 +891,7 @@ class CLI(cmd.Cmd):
             elif run.controllerType == CONTROLLER_MULTITAP:
                 max *= 4
             for bytes in range(max):
-                working_string += 0xFF
+                working_string += b'\xff'
 
             for count in range(difference):
                 if run.isEverdrive:
